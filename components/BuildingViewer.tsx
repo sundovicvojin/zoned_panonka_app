@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import apartmentsData from '@/data/apartments.json'
+import { link } from 'fs'
 
 // Dynamic import with SSR disabled
 const SceneCanvas = dynamic(() => import('@/components/SceneCanvas'), {
@@ -20,6 +21,7 @@ interface ApartmentData {
   price?: string
   status?: string
   planImage?: string
+  link?: string
   [key: string]: any
 }
 
@@ -231,7 +233,7 @@ export default function BuildingViewer({ }: BuildingViewerProps) {
                 ) : null
               ))}
             </div>
-            <a className="apartment-popup-button" href='https://zonedpanonka.rs/wp-content/uploads/2025/01/Sa.x5.pdf' target='blank'>Pogledaj detalje</a>
+            <a className="apartment-popup-button" href={apartmentData.link} target='blank'>Pogledaj detalje</a>
           </div>
         </>
       )}
