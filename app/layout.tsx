@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Building Viewer - 3D Interactive',
-  description: 'Interactive 3D building viewer with apartment selection',
+  title: 'Panonka Viewer - 3D Interactive',
+  description: 'Interaktivni 3D prikaz Panonke',
 }
 
 export default function RootLayout({
