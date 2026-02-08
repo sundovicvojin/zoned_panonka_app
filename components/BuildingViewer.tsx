@@ -245,7 +245,7 @@ function LoaderOverlay() {
   return (
     <div className="loader-overlay">
       <div className="loader-spinner"></div>
-      <div className="loader-text">Loading "Panonka"...</div>
+      <div className="loader-text">Ucitavanje "Panonka"...</div>
     </div>
   )
 }
