@@ -56,8 +56,8 @@ const SceneContent = memo(function SceneContent({
         enableZoom={true}
         enableRotate={true}
         maxPolarAngle={Math.PI / 2.1}
-        minDistance={30}
-        maxDistance={150}
+        minDistance={20}
+        maxDistance={50}
         dampingFactor={0.05}
         enableDamping={true}
       />
