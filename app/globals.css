@@ -452,13 +452,28 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08), transparent 45%),
+    rgba(6, 11, 18, 0.88);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 100;
   color: white;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.loader-panel {
+  width: min(92vw, 420px);
+  border-radius: 14px;
+  padding: 24px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(10, 20, 34, 0.62);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  animation: loaderPanelIn 420ms ease;
 }
 
 .loader-spinner {
@@ -468,7 +483,7 @@ body {
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin: 0 auto 14px;
 }
 
 @keyframes spin {
@@ -479,7 +494,72 @@ body {
 
 .loader-text {
   font-size: 16px;
-  opacity: 0.9;
+  opacity: 0.95;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.loader-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loader-progress-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.loader-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #59d7ff 0%, #9dfdc7 55%, #ffffff 100%);
+  transition: width 180ms ease-out;
+  position: relative;
+}
+
+.loader-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 22%;
+  min-width: 18px;
+  background: rgba(255, 255, 255, 0.35);
+  filter: blur(2px);
+  animation: progressGlow 1s ease-in-out infinite;
+}
+
+.loader-percentage {
+  min-width: 48px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+@keyframes loaderPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes progressGlow {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 /* Responsive - Tablet */

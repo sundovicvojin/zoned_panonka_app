@@ -2,13 +2,13 @@
 
 import { useState, useEffect, Suspense, useCallback } from 'react'
 import dynamic from 'next/dynamic'
+import { useProgress } from '@react-three/drei'
 import apartmentsData from '@/data/apartments.json'
-import { link } from 'fs'
 
 // Dynamic import with SSR disabled
 const SceneCanvas = dynamic(() => import('@/components/SceneCanvas'), {
   ssr: false,
-  loading: () => <LoaderOverlay />,
+  loading: () => null,
 })
 
 interface ApartmentData {
@@ -190,12 +190,13 @@ export default function BuildingViewer({ }: BuildingViewerProps) {
       </div>
 
       {/* 3D Scene */}
-      <Suspense fallback={<LoaderOverlay />}>
+      <Suspense fallback={null}>
         <SceneCanvas
           onApartmentClick={handleApartmentClick}
           debugMode={debugMode}
         />
       </Suspense>
+      <LoaderOverlay />
 
       {/* Apartment Floor Plan Popup */}
       {isPanelOpen && selectedApartmentId && apartmentData && (
@@ -242,10 +243,25 @@ export default function BuildingViewer({ }: BuildingViewerProps) {
 }
 
 function LoaderOverlay() {
+  const { active, progress } = useProgress()
+  const roundedProgress = Math.min(100, Math.max(0, Math.round(progress)))
+
+  if (!active && roundedProgress >= 100) {
+    return null
+  }
+
   return (
     <div className="loader-overlay">
-      <div className="loader-spinner"></div>
-      <div className="loader-text">Ucitavanje "Panonka"...</div>
+      <div className="loader-panel">
+        <div className="loader-spinner" />
+        <div className="loader-text">Ucitavanje objekta...</div>
+        <div className="loader-progress-row">
+          <div className="loader-progress-track">
+            <div className="loader-progress-fill" style={{ width: `${roundedProgress}%` }} />
+          </div>
+          <span className="loader-percentage">{roundedProgress}%</span>
+        </div>
+      </div>
     </div>
   )
 }

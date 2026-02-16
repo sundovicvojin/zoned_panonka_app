@@ -105,7 +105,7 @@ export default function SceneCanvas({ onApartmentClick, debugMode }: SceneCanvas
         stencil: false,
         depth: true,
       }}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height: '100%', background: '#d6faff' }}
       frameloop="always"
     >
       <Suspense fallback={null}>

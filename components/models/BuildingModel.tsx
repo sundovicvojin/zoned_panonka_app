@@ -24,10 +24,26 @@ function getStatusColor(status: string | undefined): string {
   return STATUS_COLORS[normalizedStatus] || '#cccccc'
 }
 
+function toMaterialList(material: Mesh['material']): Material[] {
+  if (Array.isArray(material)) {
+    const result: Material[] = []
+    material.forEach((mat) => {
+      if (Array.isArray(mat)) {
+        mat.forEach((inner) => result.push(inner))
+      } else {
+        result.push(mat)
+      }
+    })
+    return result
+  }
+  return [material]
+}
+
 const BuildingModel = forwardRef<Group, BuildingModelProps>(
   ({ onApartmentClick, debugMode }, ref) => {
     const { scene } = useGLTF('/models/building.glb')
     const internalRef = useRef<Group>(null)
+    const hoveredMeshRef = useRef<Mesh | null>(null)
 
     // Use forwarded ref or internal ref
     const actualRef = (ref as React.RefObject<Group>) || internalRef
@@ -56,7 +72,7 @@ const BuildingModel = forwardRef<Group, BuildingModelProps>(
 
           // Handle both single material and material array
           const isArray = Array.isArray(mesh.material)
-          const originalMaterials = isArray ? mesh.material : [mesh.material]
+          const originalMaterials = toMaterialList(mesh.material)
           const newMaterials: Material[] = []
 
           originalMaterials.forEach((mat) => {
@@ -105,7 +121,7 @@ const BuildingModel = forwardRef<Group, BuildingModelProps>(
           const mesh = object as Mesh
           if (!mesh.material) return
 
-          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+          const materials = toMaterialList(mesh.material)
           materials.forEach((mat) => {
             if (mat instanceof Material) {
               // Update opacity only (color is already set from initial processing)
@@ -139,16 +155,67 @@ const BuildingModel = forwardRef<Group, BuildingModelProps>(
       }
     }
 
+    const animateMeshOpacity = (mesh: Mesh, targetOpacity: number, durationMs = 150) => {
+      if (!mesh.material) return
+
+      const materials = toMaterialList(mesh.material)
+      const animatableMaterials = materials.filter((mat): mat is Material => mat instanceof Material)
+      if (animatableMaterials.length === 0) return
+
+      const startOpacities = animatableMaterials.map((mat) => mat.opacity)
+      const startTime = performance.now()
+      const existingAnimationId = mesh.userData.opacityAnimationId as number | undefined
+      if (existingAnimationId) {
+        cancelAnimationFrame(existingAnimationId)
+      }
+
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - startTime) / durationMs)
+        const eased = 1 - Math.pow(1 - progress, 3)
+
+        animatableMaterials.forEach((mat, index) => {
+          mat.opacity = startOpacities[index] + (targetOpacity - startOpacities[index]) * eased
+          mat.needsUpdate = true
+        })
+
+        if (progress < 1) {
+          mesh.userData.opacityAnimationId = requestAnimationFrame(tick)
+        } else {
+          mesh.userData.opacityAnimationId = undefined
+        }
+      }
+
+      mesh.userData.opacityAnimationId = requestAnimationFrame(tick)
+    }
+
+    const getBaseOpacity = () => (debugMode ? 0.3 : 0.0)
+
     // Pointer events for cursor feedback
     const handlePointerOver = (event: any) => {
       event.stopPropagation()
       const object = event.object as Object3D
-      if (object?.name && typeof object.name === 'string' && object.name.startsWith('AC_')) {
+      if (!(object instanceof Mesh)) return
+
+      if (object?.name && typeof object.name === 'string' && object.name.startsWith('AC_APT_')) {
+        if (hoveredMeshRef.current && hoveredMeshRef.current !== object) {
+          animateMeshOpacity(hoveredMeshRef.current, getBaseOpacity(), 150)
+        }
+        hoveredMeshRef.current = object
+        animateMeshOpacity(object, 0.7, 200)
         document.body.style.cursor = 'pointer'
       }
     }
 
-    const handlePointerOut = () => {
+    const handlePointerOut = (event: any) => {
+      event.stopPropagation()
+      const object = event.object as Object3D
+      if (!(object instanceof Mesh)) return
+      if (!object.name.startsWith('AC_APT_')) return
+
+      animateMeshOpacity(object, getBaseOpacity(), 150)
+      if (hoveredMeshRef.current === object) {
+        hoveredMeshRef.current = null
+      }
       document.body.style.cursor = 'default'
     }
 
